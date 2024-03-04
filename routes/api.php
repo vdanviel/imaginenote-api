@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/user/register', [App\Http\Controllers\UserController::class, 'store']);
+Route::post('/user/enter', [App\Http\Controllers\UserController::class, 'store']);
 
-Route::post('/login', [\App\Http\Controllers\UserController::class, 'authenticate']);
+Route::post('/enter/validate/{token}', [\App\Http\Controllers\UserController::class, 'authenticate']);
 
-Route::post('/guitar/register', [\App\Http\Controllers\GuitarController::class, 'store']);
+Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'store']);
 
-Route::get('/guitar/{id_user}', [\App\Http\Controllers\GuitarController::class, 'show']);
+Route::get('/note/{id_user}', [\App\Http\Controllers\NoteController::class, 'show']);

@@ -14,10 +14,13 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('email', 55)->unique();
+            $table->string('phone', 55)->unique();
             $table->string('ip', 25)->unique;
             $table->string('address', 100);
             $table->string('country', 30);
             $table->string('local', 100);
+            //$table->timestamp('email_verified_at')->nullable();
             $table->string('token', 10)->default(Illuminate\Support\Str::random(10));
             $table->timestamps();
         });

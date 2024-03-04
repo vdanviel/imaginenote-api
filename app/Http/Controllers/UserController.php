@@ -3,21 +3,93 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Laravel\Sanctum\HasApiTokens;
 
 class UserController extends Controller
 {
-    public function authenticate(Request $request){
+    use HasApiTokens;
+    
+    public function store(Request $request){
 
-        $ip = $request->input('ip'); // Supondo que você esteja recebendo o IP como parâmetro
+        try {
+            
+            //validando dados enviados
+            $request->validate([
+                'email' => 'required',
+                'phone' => 'required',
+                'ip' => 'required',
+                'address' => 'required',
+                'country' => 'required',
+                'location' => 'required'
+            ]);     
 
-        // Verificar se o IP existe na tabela de usuários
-        $user = \App\Models\User::where('ip', $ip)->first();
+            //salvando o user do request com email_verified_at null para saber se user tem acesso a conta ou não e verificando se conta já existe..
+            $user = new \App\Models\User;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->ip = $request->ip;
+            $user->address = $request->address;
+            $user->country = $request->country;
+            $user->local = $request->location;
+            
+            // Verifica se o usuário já existe com base no email, telefone e IP
+            $existing_user = \App\Models\User::where('email', $request->email)->orWhere('phone',$request->phone)->orWhere('ip',$request->ip)->first();
 
-        if ($user) {
-            // O IP existe na tabela de usuários
-            return $user;
-        } else {
-            // O IP não existe na tabela de usuários
+
+            if ($existing_user) {
+                // O usuário já existe, vai ser criado outro token de entrada na conta dele mesmo...
+                $access_token = $existing_user->createToken('existing_account', ['read'], now()->addHours((1)));
+
+                // Enviando e-mail com token gerado em personal_access_tokens para acesso do usuário
+                \Illuminate\Support\Facades\Mail::to($existing_user->email)->send(new \App\Mail\LoginMail($existing_user, $access_token->plainTextToken));
+
+                // Retornando uma resposta de sucesso
+                return ['existing_user' => $existing_user->created_at];
+            } 
+            
+            // O usuário não existe, então você pode salvá-lo no banco de dados
+            $user->save(); 
+
+            //gerando um token em personal_access_tokens com expiração de uma hora..
+            $access_token = $user->createToken('create_account', ['read'], now()->addHours(1));
+
+            // Enviando e-mail com token gerado em personal_access_tokens para acesso do usuário
+            \Illuminate\Support\Facades\Mail::to($request->email)->send(new \App\Mail\LoginMail($user, $access_token->plainTextToken));
+
+            // Retornando uma resposta de sucesso
+            return ['new_user' => $user->created_at];
+
+
+        } catch (\Exception | \PDOException $th) {
+            
+            //retornando erro em caso de erros..
+            return ['error' => $th->getMessage()];
+
+        }
+
+    }
+
+    public function authenticate($token){
+    
+        //achando o objeto token do usuário pelo findToken() que acha o objeto token pelo token criptografado que o sanctum dá..
+        $access = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+        
+        if ($access) {        
+
+            //se o token não está expirado..
+            if (strtotime($access->expires_at) > strtotime(now()->toDateTimeString())) {
+
+                // Token válido
+                $user = \App\Models\User::find($access->tokenable_id);
+
+                //retornando dados do usuário
+                return $user;
+            }else{
+                //token expirado..
+                return false;
+            }
+
+        }else {
             return false;
         }
 
@@ -29,45 +101,7 @@ class UserController extends Controller
 
     }
 
-    public function store(Request $request){
 
-        try {
-            
-            $request->validate([
-                'ip' => 'required',
-                'address' => 'required',
-                'country' => 'required',
-                'location' => 'required'
-            ]);
-    
-            $request->headers->set('Access-Control-Allow-Origin', '*');
-            $request->headers->set('Access-Control-Allow-Methods', '*');
-            $request->headers->set('Access-Control-Allow-Headers', '*');
-            
-            $user_exists = \App\Models\User::where('ip', $request->ip)->get();
 
-            //https://laravel.com/docs/10.x/collections#method-isnotempty
-            if ($user_exists->isNotEmpty()) {
-                
-                return false;
-    
-            }
-
-            $user = new \App\Models\User;
-    
-            $user->ip = $request->ip;
-            $user->address = $request->address;
-            $user->country = $request->country;
-            $user->local = $request->location;
-
-            return $user->save();
-
-        } catch (\Exception | \PDOException $th) {
-            
-            return $th;
-
-        }
-
-    }
 
 }

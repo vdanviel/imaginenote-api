@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class GuitarController extends Controller
+class NoteController extends Controller
 {
-    
     public function store(Request $request){
 
         try {
@@ -18,12 +17,12 @@ class GuitarController extends Controller
                 ]
             );
     
-            $guitar = new \App\Models\Guitar;
+            $note = new \App\Models\Note;
     
-            $guitar->name = $request->name;
-            $guitar->id_user = $request->id_user;
+            $note->name = $request->name;
+            $note->id_user = $request->id_user;
     
-            return $guitar->save();
+            return $note->save();
 
         } catch (\Exception | \PDOException $th) {
             
@@ -35,10 +34,9 @@ class GuitarController extends Controller
 
     public function show($id_user){
 
-        $guitar = \App\Models\Guitar::where('id_user', $id_user)->get();
+        $note = \App\Models\Note::where('id_user', $id_user)->get();
 
-        return $guitar;
+        return $note;
 
     }
-
 }
