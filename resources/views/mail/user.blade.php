@@ -44,11 +44,11 @@
         <h1>Olá {{$email}}!</h1>
 
         <div>
-            Para acessar a sua conta clique <a href="{{'http://127.0.0.1:8000/api/user/register' . "/" . $secret_pass}}">aqui</a>. Obrigado por usar o ImagineNote, anote tudo o que você pensa!
+            Para acessar a sua conta clique <a href="{{'http://localhost:5173/verify' . "/" . $secret_pass}}">aqui</a>. Obrigado por usar o ImagineNote, anote tudo o que você pensa!
         </div>
 
         <div>
-            <a href="{{'http://127.0.0.1:8000/api/enter/validate' . "/" . $secret_pass}}">{{'http://127.0.0.1:8000/api/user/register' . "/" . $secret_pass}}</a>
+            <a href="{{'http://localhost:5173/verify' . "/" . $secret_pass}}">{{'http://localhost:5173/verify' . "/" . $secret_pass}}</a>
         </div>
     </section>
     
