@@ -45,9 +45,16 @@ class UserController extends Controller
 
 
             if ($existing_user) {
+
+                //procurando outros tokens desse usuário..
+                $latest_tokens = \Laravel\Sanctum\PersonalAccessToken::where('tokenable_id', $existing_user->id);
+
+                //excluindo eles..
+                $latest_tokens->delete();
+
                 // O usuário já existe, vai ser criado outro token de entrada na conta dele mesmo...
                 $access_token = $existing_user->createToken('existing_account', ['read'], now()->addHours((1)));
-
+                
                 // Enviando e-mail com token gerado em personal_access_tokens para acesso do usuário
                 \Illuminate\Support\Facades\Mail::to($request->input('email'))->send(new \App\Mail\LoginMail($existing_user, $access_token->plainTextToken));
 
@@ -57,6 +64,12 @@ class UserController extends Controller
             
             // O usuário não existe, então você pode salvá-lo no banco de dados
             $user->save(); 
+
+            //procurando outros tokens desse usuário..
+            $latest_tokens = \Laravel\Sanctum\PersonalAccessToken::where('tokenable_id', $user->id);
+
+            //excluindo eles..
+            $latest_tokens->delete();
 
             //gerando um token em personal_access_tokens com expiração de uma hora..
             $access_token = $user->createToken('create_account', ['read'], now()->addHours(1));
