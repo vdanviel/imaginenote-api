@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/user/enter', [App\Http\Controllers\UserController::class, 'store']);
 
-Route::post('/enter/validate/{token}', [\App\Http\Controllers\UserController::class, 'authenticate']);
+Route::post('/enter/validate', [\App\Http\Controllers\UserController::class, 'authenticate']);
+
+Route::get('/data', [\App\Http\Controllers\UserController::class, 'user_data']);
 
 Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'store']);
 

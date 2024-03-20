@@ -6,15 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 use Laravel\Sanctum\HasApiTokens;
+use Monolog\Processor\UidProcessor;
 
 class UserController extends Controller
 {
     use HasApiTokens;
     
-    public function store(Request $request, Response $response){
-
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    public function store(Request $request){
 
         try {
             
@@ -32,50 +30,71 @@ class UserController extends Controller
                 ]
             );
 
-            //salvando o user do request com email_verified_at null para saber se user tem acesso a conta ou não e verificando se conta já existe..
-            $user = new \App\Models\User;
-            $user->email = $request->input('email');
-            $user->ip = $request->ip;
-            $user->address = $request->address;
-            $user->country = $request->country;
-            $user->local = $request->location;
+            //coleção de itens q vou usar para gerar um random de ints para o pin..
+            $ints = collect([0,1,2,3,4,5,6,7,8,9]);
 
             // Verifica se o usuário já existe com base no email, telefone e IP
-            $existing_user = \App\Models\User::where('email', $request->input('email'))->first();
-
+            $existing_user = \App\Models\User::where('email', $request->email)->first();
 
             if ($existing_user) {
 
                 //procurando outros tokens desse usuário..
-                $latest_tokens = \Laravel\Sanctum\PersonalAccessToken::where('tokenable_id', $existing_user->id);
+                $latest_tokens = \App\Models\AcessCode::where('id_user', $existing_user->id);
 
                 //excluindo eles..
                 $latest_tokens->delete();
 
                 // O usuário já existe, vai ser criado outro token de entrada na conta dele mesmo...
-                $access_token = $existing_user->createToken('existing_account', ['read'], now()->addHours((1)));
+                $access_token = new \App\Models\AcessCode();
+
+                $access_token->name = 'existing_user';
+                $access_token->pin = implode("",$ints->random(5)->toArray());//pin de 5 caracteres
+                $access_token->token = md5(date('YmdHis') . '' . (new UidProcessor)->getUid());
+                $access_token->id_user = $existing_user->id;
+                $access_token->expires_at = now()->addHour();
                 
+                //salvando token..
+                $access_token->save();
+
                 // Enviando e-mail com token gerado em personal_access_tokens para acesso do usuário
-                \Illuminate\Support\Facades\Mail::to($request->input('email'))->send(new \App\Mail\LoginMail($existing_user, $access_token->plainTextToken));
+                \Illuminate\Support\Facades\Mail::to($request->input('email'))->send(new \App\Mail\LoginMail($existing_user, $access_token->pin));
 
                 // Retornando uma resposta de sucesso
                 return ['existing_user' => $existing_user->created_at];
             } 
             
-            // O usuário não existe, então você pode salvá-lo no banco de dados
+            //recuprando info para salvar user..
+            $user = new \App\Models\User;
+            $user->email = $request->email;
+            $user->ip = $request->ip;
+            $user->address = $request->address;
+            $user->country = $request->country;
+            $user->local = $request->location;
+            $user->secret_pass = \Illuminate\Support\Str::random(10);
+
+            //salvando user..
             $user->save(); 
 
             //procurando outros tokens desse usuário..
-            $latest_tokens = \Laravel\Sanctum\PersonalAccessToken::where('tokenable_id', $user->id);
+            $latest_tokens = \App\Models\AcessCode::where('id_user', $user->id);
 
             //excluindo eles..
             $latest_tokens->delete();
 
             //gerando um token em personal_access_tokens com expiração de uma hora..
-            $access_token = $user->createToken('create_account', ['read'], now()->addHours(1));
+            $access_token = new \App\Models\AcessCode();
+
+            $access_token->name = 'new_user';
+            $access_token->pin = implode("",$ints->random(5)->toArray());//pin de 5 caracteres
+            $access_token->token = md5(date('YmdHis') . '' . (new UidProcessor)->getUid());
+            $access_token->id_user = $user->id;
+            $access_token->expires_at = now()->addHour();
+
+            //salvando token..
+            $access_token->save();
 
             // Enviando e-mail com token gerado em personal_access_tokens para acesso do usuário
-            \Illuminate\Support\Facades\Mail::to($request->input('email'))->send(new \App\Mail\LoginMail($user, $access_token->plainTextToken));
+            \Illuminate\Support\Facades\Mail::to($request->input('email'))->send(new \App\Mail\LoginMail($user, $access_token->pin));
 
             // Retornando uma resposta de sucesso
             return ['new_user' => $user->created_at];
@@ -84,34 +103,47 @@ class UserController extends Controller
         } catch (\Exception | \PDOException $th) {
             
             //retornando erro em caso de erros..
-            return ['error' => $th];
+            return ['error' => $th->getLine()];
+
 
         }
 
     }
 
-    public function authenticate($token){
-    
-        //achando o objeto token do usuário pelo findToken() que acha o objeto token pelo token criptografado que o sanctum dá..
-        $access = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    public function authenticate(Request $request){
         
-        if ($access) {        
+        $request->validate(
+            [
+                'pin' => 'required'
+            ],
+            [
+                'required' => 'Código de acesso inválido.',
+            ]
+        );
+
+        //achando o objeto token do usuário pelo findToken() que acha o objeto token pelo token criptografado que o sanctum dá..
+        $access = \App\Models\AcessCode::where('pin', $request->input('pin'))->first();
+
+        if ($access) {
 
             //se o token não está expirado..
             if (strtotime($access->expires_at) > strtotime(now()->toDateTimeString())) {
 
                 // Token válido
-                $user = \App\Models\User::find($access->tokenable_id);
+                $user = \App\Models\User::find($access->id_user);
 
                 //retornando dados do usuário
-                return $user;
+                return ['user' => $user->secret_pass];
+                
             }else{
                 //token expirado..
-                return false;
+                return ['error' => 'expired_token'];
             }
 
         }else {
-            return false;
+
+            return ['error' => 'absent_token'];
+
         }
 
     }
@@ -122,7 +154,16 @@ class UserController extends Controller
 
     }
 
+    public function user_data(Request $request){
 
+        $user = \App\Models\User::where('secret_pass', $request->input('token'))->first();
+    
+        if (!$user) {
+            return ['error' => 'user_not_exists'];
+        }
+        
+        return $user;
+    }
 
 
 }

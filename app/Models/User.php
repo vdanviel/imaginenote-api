@@ -12,7 +12,7 @@ class User extends Model
 
     protected $primaryKey = 'id';
 
-    protected $fillable = ['name', 'ip', 'address', 'country', 'local'];
+    protected $fillable = ['name', 'ip', 'address', 'country', 'local', 'secret_pass'];
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',

@@ -43,7 +43,7 @@ class LoginMail extends Mailable
             with: [
                 'email' => $this->user->email,
                 'secret_pass' => $this->secret_pass,
-                'url' => (new \Illuminate\Http\Request)->url()
+                //'url' => (new \Illuminate\Http\Request)->url()
 
             ],
             

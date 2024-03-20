@@ -44,12 +44,13 @@
         <h1>Olá {{$email}}!</h1>
 
         <div>
-            Para acessar a sua conta clique <a href="{{'http://localhost:5173/verify' . "/" . $secret_pass}}">aqui</a>. Obrigado por usar o ImagineNote, anote tudo o que você pensa!
+            Para acessar a sua conta utilize o código de acesso:
+            <br>
+            ({{$secret_pass}})
+            <br>
+            Obrigado por usar o ImagineNote, anote tudo o que você pensa!
         </div>
 
-        <div>
-            <a href="{{'http://localhost:5173/verify' . "/" . $secret_pass}}">{{'http://localhost:5173/verify' . "/" . $secret_pass}}</a>
-        </div>
     </section>
     
     
