@@ -103,50 +103,42 @@ class UserController extends Controller
         } catch (\Exception | \PDOException $th) {
             
             //retornando erro em caso de erros..
-            return ['error' => $th->getLine()];
+            return ['error' => $th->getMessage()];
 
 
         }
 
     }
 
-    public function authenticate(Request $request){
-        
-        $request->validate(
+    public function authenticate(Request $request) {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), 
             [
                 'pin' => 'required'
             ],
+
             [
-                'required' => 'Código de acesso inválido.',
+                'required' => 'Preencha o campo.'
             ]
         );
 
-        //achando o objeto token do usuário pelo findToken() que acha o objeto token pelo token criptografado que o sanctum dá..
-        $access = \App\Models\AcessCode::where('pin', $request->input('pin'))->first();
-
-        if ($access) {
-
-            //se o token não está expirado..
-            if (strtotime($access->expires_at) > strtotime(now()->toDateTimeString())) {
-
-                // Token válido
-                $user = \App\Models\User::find($access->id_user);
-
-                //retornando dados do usuário
-                return ['user' => $user->secret_pass];
-                
-            }else{
-                //token expirado..
-                return ['error' => 'expired_token'];
-            }
-
-        }else {
-
-            return ['error' => 'absent_token'];
-
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->getMessageBag()], 400);
         }
-
+    
+        $access = \App\Models\AcessCode::where('pin', $request->input('pin'))->first();
+    
+        if ($access) {
+            if (strtotime($access->expires_at) > strtotime(now()->toDateTimeString())) {
+                $user = \App\Models\User::find($access->id_user);
+                return response()->json(['user' => $user->secret_pass], 200);
+            } else {
+                return response()->json(['error' => 'expired_token'], 400);
+            }
+        } else {
+            return response()->json(['error' => 'absent_token'], 400);
+        }
     }
+    
 
     public function show(Request $request){
 
