@@ -8,25 +8,30 @@ class NoteController extends Controller
 {
     public function store(Request $request){
 
-        try {
+        $request->validate(
+            [
+                'name' => 'required',
+                'id_user' => 'required'
+            ],
+            [
+                'required' => 'Um ou mais campos em falta.',
+            ]
+        );
 
-            $request->validate(
-                [
-                    'name' => 'required',
-                    'id_user' => 'required',
-                ]
-            );
-    
+        try {
+   
             $note = new \App\Models\Note;
     
             $note->name = $request->name;
             $note->id_user = $request->id_user;
     
-            return $note->save();
+            $note->save();
+
+            return ['new_note' => $note->created_at];
 
         } catch (\Exception | \PDOException $th) {
             
-            return $th;
+            return ['error' => $th->getMessage()];
 
         }
 

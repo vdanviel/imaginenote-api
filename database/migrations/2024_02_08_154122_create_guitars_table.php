@@ -19,14 +19,14 @@ return new class extends Migration
 
             $table->string('name');
             
-            $table->text('text');
+            $table->text('text')->nullable(true);
             $table->text('files')->default(json_encode(
                 [
                     'image' => [],
                     'audio' => [],
                     'video' => []
                 ]
-            ));
+            ))->nullable(true);
 
             $table->timestamps();
         });
