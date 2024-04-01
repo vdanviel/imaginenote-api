@@ -14,12 +14,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//usuario
 Route::post('/user/enter', [App\Http\Controllers\UserController::class, 'store']);
 
 Route::post('/enter/validate', [\App\Http\Controllers\UserController::class, 'authenticate']);
 
 Route::get('/data', [\App\Http\Controllers\UserController::class, 'user_data']);
 
-Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'store']);
+//anotacoes
+Route::get('/note/all/{id_user}', [\App\Http\Controllers\NoteController::class, 'index']);
 
-Route::get('/note/{id_user}', [\App\Http\Controllers\NoteController::class, 'show']);
+Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'store']);

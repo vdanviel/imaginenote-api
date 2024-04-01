@@ -3,9 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use \App\Models\Note as Note;
 
 class NoteController extends Controller
 {
+
+    public function index($id){
+
+        $notes = Note::where('id_user',$id)->select(['id','name', 'created_at', 'id_user'])->get();
+
+        return $notes;
+
+    }
+
     public function store(Request $request){
 
         $request->validate(
@@ -39,7 +49,7 @@ class NoteController extends Controller
 
     public function show($id_user){
 
-        $note = \App\Models\Note::where('id_user', $id_user)->get();
+        $note = Note::where('id_user', $id_user)->get();
 
         return $note;
 
