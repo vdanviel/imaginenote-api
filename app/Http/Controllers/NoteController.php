@@ -30,14 +30,14 @@ class NoteController extends Controller
 
         try {
    
-            $note = new \App\Models\Note;
+            $note = new Note;
     
             $note->name = $request->name;
             $note->id_user = $request->id_user;
     
             $note->save();
 
-            return ['new_note' => $note->created_at];
+            return ['new_note' => $note->created_at, 'id' => $note->id_user];
 
         } catch (\Exception | \PDOException $th) {
             
