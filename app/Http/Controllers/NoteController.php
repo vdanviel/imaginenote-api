@@ -10,7 +10,7 @@ class NoteController extends Controller
 
     public function index($id){
 
-        $notes = Note::where('id_user',$id)->select(['id','name', 'created_at', 'id_user'])->get();
+        $notes = Note::where('id_user',$id)->select(['id','name', 'created_at', 'id_user'])->orderBy('updated_at', 'desc')->get();
 
         return $notes;
 
