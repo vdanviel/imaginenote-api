@@ -37,7 +37,7 @@ class NoteController extends Controller
     
             $note->save();
 
-            return ['new_note' => $note->created_at, 'id' => $note->id_user];
+            return ['new_note' => $note->created_at, 'id' => $note->id];
 
         } catch (\Exception | \PDOException $th) {
             
@@ -47,11 +47,90 @@ class NoteController extends Controller
 
     }
 
-    public function show($id_user){
+    public function show($id){
 
-        $note = Note::where('id_user', $id_user)->get();
+        $note = Note::where('id', $id)->first();
 
         return $note;
+
+    }
+
+    public function save_text(Request $request){
+
+        $request->validate(
+            [
+                'id' => 'required',
+                'text' => 'required'
+            ],
+            [
+                'required' => 'Um ou mais campos em falta.',
+            ]
+        );
+
+        try {
+            
+            $note = Note::find($request->id);
+
+            if ($note) {
+                
+                
+                $note->text = $request->text;
+
+                $note->save();
+
+                return ['note_text_saved' => $note->updated_at];
+
+            }else{
+
+                return ['error' => 'Nota inexistente no banco de dados.'];
+
+            }
+
+
+        } catch (\Exception | \PDOException $th) {
+            
+            return ['error' => $th->getMessage()];
+
+        }
+
+    }
+
+    public function change_name(Request $request){
+            
+        $request->validate(
+            [
+                'id' => 'required',
+                'name' => 'required'
+            ],
+            [
+                'required' => 'Um ou mais campos em falta.',
+            ]
+        );
+
+        try {
+            
+            $note = Note::find($request->id);
+
+            if ($note) {
+                
+                
+                $note->name = $request->name;
+
+                $note->save();
+
+                return ['note_name_saved' => $note->updated_at];
+
+            }else{
+
+                return ['error' => 'Nota inexistente no banco de dados.'];
+
+            }
+
+        } catch (\Exception | \PDOException $th) {
+            
+            return ['error' => $th->getMessage()];
+
+        }
 
     }
 }

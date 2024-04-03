@@ -24,4 +24,10 @@ Route::get('/data', [\App\Http\Controllers\UserController::class, 'user_data']);
 //anotacoes
 Route::get('/note/all/{id_user}', [\App\Http\Controllers\NoteController::class, 'index']);
 
+Route::get('/note/{id}', [\App\Http\Controllers\NoteController::class, 'show']);
+
 Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'store']);
+
+Route::patch('/note/name/save', [\App\Http\Controllers\NoteController::class, 'change_name']);
+
+Route::patch('/note/text/save', [\App\Http\Controllers\NoteController::class, 'save_text']);
