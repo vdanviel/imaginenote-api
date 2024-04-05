@@ -59,11 +59,10 @@ class NoteController extends Controller
 
         $request->validate(
             [
-                'id' => 'required',
-                'text' => 'required'
+                'id' => 'required'
             ],
             [
-                'required' => 'Um ou mais campos em falta.',
+                'required' => 'Identificador necessário.',
             ]
         );
 
