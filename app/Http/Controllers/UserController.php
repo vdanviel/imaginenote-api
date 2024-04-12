@@ -148,13 +148,28 @@ class UserController extends Controller
 
     public function user_data(Request $request){
 
-        $user = \App\Models\User::where('secret_pass', $request->input('token'))->first();
-    
-        if (!$user) {
-            return ['error' => 'user_not_exists'];
+        $request->validate([
+            'token' => 'required'
+        ]);
+
+        try {
+
+            $user = \App\Models\User::where('secret_pass', $request->input('token'))->first();
+        
+            if (!$user) {
+                return ['error' => 'user_not_exists'];
+            }
+            
+            return $user;
+
+        } catch (\Exception | \PDOException $th) {
+            
+            //retornando erro em caso de erros..
+            return ['error' => $th->getMessage()];
+
+
         }
         
-        return $user;
     }
 
 

@@ -55,6 +55,62 @@ class NoteController extends Controller
 
     }
 
+    public function save_midia(Request $request){
+        
+        //$gname,$appname,$type,$date
+        $request->validate(
+            [
+                'id' => 'required',
+                'gname' => 'required',
+                'appname' => 'required',
+                'type' => 'required',
+                'date' => 'required'
+            ],
+            [
+                'required' => 'Um ou mais campos em falta.',
+            ]
+        );
+
+        try {
+
+            $note = new Note;
+
+            switch ($request->type) {
+                case 'image':
+                    
+                    $note->images = [
+                        [
+
+                        ]
+                    ];
+
+                    break;
+
+                case 'video':
+                    # code...
+                    break;
+
+                case 'audio':
+                    # code...
+                    break;
+                
+                default:
+                    # code...
+                    break;
+            }
+
+            $note->save();
+
+            return ['new_note' => $note->created_at, 'id' => $note->id];
+
+        } catch (\Exception | \PDOException $th) {
+            
+            return ['error' => $th->getMessage()];
+
+        }
+
+    }
+
     public function save_text(Request $request){
 
         $request->validate(
