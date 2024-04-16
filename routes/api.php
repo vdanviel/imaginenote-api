@@ -31,3 +31,17 @@ Route::post('/note/register', [\App\Http\Controllers\NoteController::class, 'sto
 Route::patch('/note/name/save', [\App\Http\Controllers\NoteController::class, 'change_name']);
 
 Route::patch('/note/text/save', [\App\Http\Controllers\NoteController::class, 'save_text']);
+
+//midia
+
+//image
+Route::post('/note/image/register', [\App\Http\Controllers\NoteController::class, 'register_image']);
+Route::patch('/note/image/name/save', [\App\Http\Controllers\NoteController::class, 'save_image_name']);
+
+//video
+Route::post('/note/video/register', [\App\Http\Controllers\NoteController::class, 'register_video']);
+Route::patch('/note/video/name/save', [\App\Http\Controllers\NoteController::class, 'save_video_name']);
+
+//audio
+Route::post('/note/audio/register', [\App\Http\Controllers\NoteController::class, 'register_audio']);
+Route::patch('/note/audio/name/save', [\App\Http\Controllers\NoteController::class, 'save_audio_name']);

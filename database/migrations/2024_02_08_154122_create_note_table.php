@@ -20,11 +20,7 @@ return new class extends Migration
             $table->string('name');
             
             $table->text('text')->nullable(true);
-
-            $table->json('images')->nullable(true);
-            $table->json('videos')->nullable(true);
-            $table->json('audios')->nullable(true);
-
+            
             $table->timestamps();
         });
     }
