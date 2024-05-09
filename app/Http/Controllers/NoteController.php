@@ -186,13 +186,17 @@ class NoteController extends Controller
 
             $image_existence = \App\Models\Images::find($request->id_image);
 
-            if ($image_existence) {
-                # code...
+            if ($image_existence) {           
+
+                $image_existence->appname = $request->appname;
+
+                return ['image_name_saved' => $image_existence->updated_at];
+
+            }else{
+
+                return ['error' => 'Imagem não existe.'];
+
             }
-
-            $image_existence->appname = $request->appname;
-
-            return ['image_name_saved' => $image_existence->updated_at];
 
         } catch (\Exception | \PDOException $th) {
             
