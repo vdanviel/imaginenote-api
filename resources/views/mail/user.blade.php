@@ -41,6 +41,7 @@
     @endpush
 
     <section>
+        
         <h1>Olá {{$email}}!</h1>
 
         <div>
